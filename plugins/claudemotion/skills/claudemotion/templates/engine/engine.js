@@ -128,6 +128,7 @@
     for (const k in v) rs.setProperty('--' + k, v[k]);
     rs.setProperty('--font', `"${st.font.family}"`); // quoted: names like "Baloo 2" are invalid unquoted
     const link = CM.h('link', document.head);
+    CM.fontCss = new Promise(res => { link.onload = res; link.onerror = res; });
     link.rel = 'stylesheet'; link.href = st.font.href;
     const base = CM.h('style', document.head);
     base.textContent = `
@@ -299,11 +300,19 @@
     return m;
   };
 
-  /* Fonts: resolve when every weight is loaded (hidden elements never trigger a load). */
-  CM.ready = () => {
+  /* Fonts: resolve when every weight is loaded (hidden elements never trigger a load).
+     Waits for the injected stylesheet first: before it is parsed, fonts.load()
+     finds no faces and resolves at once. Extra families: CM.ready(['700 Gaegu', ...]). */
+  const SAMPLE = 'Aa0123456789,.';
+  CM.ready = (extra = []) => {
     const f = CM.style.font;
-    return Promise.all(f.weights.map(w => document.fonts.load(`${w} 24px "${f.family}"`)))
+    const specs = f.weights.map(w => `${w} 24px "${f.family}"`).concat(extra.map(e => {
+      const [w, ...name] = e.split(' ');
+      return `${w} 24px "${name.join(' ')}"`;
+    }));
+    return (CM.fontCss || Promise.resolve())
+      .then(() => Promise.all(specs.map(s => document.fonts.load(s, SAMPLE))))
       .then(() => document.fonts.ready)
-      .then(() => f.weights.every(w => document.fonts.check(`${w} 24px "${f.family}"`)));
+      .then(() => specs.every(s => document.fonts.check(s, SAMPLE) && [...document.fonts].some(ff => ff.status === 'loaded' && s.includes(`"${ff.family.replace(/"/g, '')}"`))));
   };
 })();
