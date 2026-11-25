@@ -1,0 +1,15 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "claudemotion-local",
+  "description": "Local marketplace hosting the claudemotion plugin",
+  "owner": { "name": "girgi" },
+  "plugins": [
+    {
+      "name": "claudemotion",
+      "description": "Motion-graphics videos as code: one morphing shape, closed-form springs, beat-synced UI sounds, rendered to MP4. Short loops or long 16:9 videos in four styles (standard, drawn, glass, funny).",
+      "category": "productivity",
+      "author": { "name": "girgi" },
+      "source": "./plugins/claudemotion"
+    }
+  ]
+}

@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en" data-style="standard">
+<head>
+<meta charset="utf-8">
+<title>Claudemotion demo</title>
+<script src="engine/engine.js"></script>
+<script src="engine/styles/standard.js"></script>
+<script src="engine/styles/drawn.js"></script>
+<script src="engine/styles/glass.js"></script>
+<script src="engine/styles/funny.js"></script>
+</head>
+<body>
+<script>
+'use strict';
+/* Demo: one shape, four states, a cursor that clicks and drags.
+   16 units. Short mode: units are beats, the video loops.
+   Long mode (?mode=long&beat=0.9): units are 0.9 s, 16:9, no loop. */
+CM.mount();
+const V = CM.style.vars;
+CM.timeline(16);
+
+const DEF = {
+  button: { w: 360, h: 112, r: 56, tone: 'accent' },
+  toggle: { w: 560, h: 140, r: 36, tone: 'surface' },
+  chart:  { w: 620, h: 380, r: 36, tone: 'surface' },
+  toast:  { w: 440, h: 96,  r: 48, tone: 'ink' },
+};
+/* Loop pages: the first state is the last entry (it wraps to t = 0).
+   Non-loop pages: the sequence must start at unit 0. */
+const SEQ = CM.loop
+  ? [['toggle', 4], ['chart', 8], ['toast', 12], ['button', 15]]
+  : [['button', 0], ['toggle', 4], ['chart', 8], ['toast', 12], ['button', 15]];
+const ST = CM.states(DEF, SEQ);
+const { at, txt, h, flexC, tb, S, c01 } = CM;
+const BOLD = CM.style.font.bold;
+
+/* clicks on the beat */
+const CLICK = { button: 3, toggle: 6 };
+CM.impacts = [tb(CLICK.button), tb(CLICK.toggle), tb(12)];
+if (CM.style.bursts) CM.style.bursts.push({ t: tb(12.1), x: 0, y: -40 });
+const prButton = CM.pressTrack([CLICK.button], 0.93);
+CM.pressAt = t => prButton.at(t);
+const TOG_X = 190;
+const CUR = [[1.6, 20, 6, 12], [3.7, 120, 80, 9], [5.4, TOG_X + 14, 4, 12], [7.3, 220, 150, 8], [10.6, 150, 60, 7], [13.6, 170, 110, 8], [15.6, 120, 90, 9]];
+const trCx = new CM.Track(), trCy = new CM.Track();
+for (const [u, x, y, w] of CUR) { trCx.to(u, x, w, 1); trCy.to(u, y, w * 0.84, 1); }
+trCx.done(); trCy.done();
+const prCur = CM.pressTrack([CLICK.button, CLICK.toggle], 0.86);
+CM.cursorAt = t => [trCx.at(t), trCy.at(t), prCur.at(t)];
+
+/* button */
+{
+  const st = ST.button;
+  const g = h('div', st.root, { position: 'absolute', inset: '0', ...flexC, gap: '12px', color: 'var(--accent-ink)', fontSize: '30px', fontWeight: BOLD, letterSpacing: '-0.02em' });
+  h('span', g).textContent = 'Get started';
+  st.el.arrow = CM.svg('svg', g, { width: 26, height: 26, viewBox: '0 0 24 24' });
+  st.el.arrow.innerHTML = `<path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>`;
+}
+/* toggle: the knob's two edges ride different springs */
+const trKL = new CM.Track(), trKR = new CM.Track();
+trKL.to(5, 0, 26, 0.86).to(CLICK.toggle, 38, 14, 0.92).to(13, 0, 26, 0.86).done();
+trKR.to(5, 40, 26, 0.86).to(CLICK.toggle, 78, 28, 0.86).to(13, 40, 14, 0.92).done();
+{
+  const st = ST.toggle;
+  const ic = at(st, -214, 0, 56, 56, { ...flexC, borderRadius: '16px', background: 'var(--soft)', fontSize: '28px' });
+  ic.textContent = CM.styleName === 'funny' ? '🌚' : '';
+  if (CM.styleName !== 'funny') {
+    const m = CM.svg('svg', ic, { width: 26, height: 26, viewBox: '0 0 24 24' });
+    m.innerHTML = `<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linejoin="round"/>`;
+  }
+  txt(st, CM.styleName === 'funny' ? 'Dark mode (spooky)' : 'Dark mode', -168, -14, 24, { weight: BOLD });
+  txt(st, 'Easier on the eyes', -168, 18, 17, { weight: 400, color: 'var(--muted)' });
+  st.el.track = at(st, TOG_X, 0, 88, 50, { borderRadius: '25px', background: 'var(--soft)', boxShadow: 'inset 0 0 0 1.5px var(--line)' });
+  st.el.knob = h('div', st.el.track, { position: 'absolute', top: '5px', height: '40px', borderRadius: '20px', background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.25)' });
+}
+/* chart: bars grow on beats, the number counts up */
+const BARS = [0.42, 0.66, 0.5, 0.82, 0.58, 0.94, 0.74];
+{
+  const st = ST.chart;
+  txt(st, CM.styleName === 'funny' ? 'Visitors (wow)' : 'Weekly visits', -270, -142, 20, { weight: BOLD, color: 'var(--muted)' });
+  st.el.num = txt(st, '0', -270, -96, 52, { weight: BOLD, tn: true, ls: '-0.03em' });
+  st.el.bars = BARS.map((v, i) => {
+    const b = h('div', st.root, { position: 'absolute', left: (st.w / 2 - 270 + i * 78) + 'px', bottom: '40px', width: '54px', height: '0px', borderRadius: '12px 12px 6px 6px', background: i === 5 ? 'var(--accent)' : 'var(--soft)', boxShadow: 'inset 0 0 0 1.5px var(--line)' });
+    return b;
+  });
+}
+/* toast */
+{
+  const st = ST.toast;
+  const g = h('div', st.root, { position: 'absolute', inset: '0', ...flexC, gap: '14px', color: CM.styleName === 'glass' ? '#FFFFFF' : 'var(--surface)', fontSize: '24px', fontWeight: BOLD });
+  st.el.check = CM.svg('svg', g, { width: 30, height: 30, viewBox: '0 0 24 24' });
+  st.el.check.innerHTML = `<path d="M20 6 9 17l-5-5" pathLength="1" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`;
+  h('span', g).textContent = CM.styleName === 'funny' ? 'Saved! You legend 🎉' : 'Saved to library';
+}
+
+function seek(tIn) {
+  const t = CM.time(tIn);
+  CM.render(t);
+  /* toggle */
+  {
+    const el = ST.toggle.el, L = trKL.at(t), R = trKR.at(t), on = c01((t - tb(CLICK.toggle)) / 0.12) * (t < tb(13) ? 1 : 0);
+    el.knob.style.left = (5 + L) + 'px'; el.knob.style.width = (R - L) + 'px';
+    el.track.style.background = CM.css(CM.mix(CM.rgb(V.soft.startsWith('#') ? V.soft : '#DDDDDD'), CM.rgb(V.accent.startsWith('#') ? V.accent : '#7C6CFF'), on));
+  }
+  /* chart */
+  {
+    const el = ST.chart.el;
+    el.bars.forEach((b, i) => { const s = S(t - tb(8.4 + 0.33 * i), CM.style.pop.w, CM.style.pop.z); b.style.height = (Math.max(0, s) * BARS[i] * 210).toFixed(1) + 'px'; });
+    el.num.textContent = Math.round(12480 * c01(S(t - tb(8.4), 5, 1))).toLocaleString('en-US');
+  }
+  /* toast check draws in */
+  {
+    const p = ST.toast.el.check.querySelector('path'), s = c01(S(t - tb(12.2), 16, 1));
+    if (s > 0.9995) { p.style.strokeDasharray = 'none'; } else { p.style.strokeDasharray = '1 1'; p.style.strokeDashoffset = (1 - s).toFixed(4); }
+  }
+  ST.button.el.arrow.style.transform = `translateX(${(6 * c01(S(t - tb(1.9), 18, 0.9)) * (t < tb(3.2) ? 1 : 0)).toFixed(2)}px)`;
+}
+
+function soundEvents() {
+  const ev = [];
+  const add = (u, type, gain = 1) => ev.push({ t: CM.wrap(tb(u)), beat: u, type, gain });
+  for (const [, u] of SEQ) add(u, 'whoosh', 0.55);
+  add(CLICK.button, 'click'); add(CLICK.toggle, 'toggle');
+  BARS.forEach((_, i) => add(8.4 + 0.33 * i, 'detent', 1.2));
+  add(12.2, 'check');
+  return ev.sort((a, b) => a.t - b.t);
+}
+
+window.T = CM.T; window.B = CM.B; window.LOOP = CM.loop; window.seek = seek; window.soundEvents = soundEvents;
+window.curX = t => trCx.at(t); window.curY = t => trCy.at(t);
+window.ready = CM.ready().then(ok => { seek(0); return ok; });
+seek(Number(CM.Q.get('t') || 0));
+</script>
+</body>
+</html>

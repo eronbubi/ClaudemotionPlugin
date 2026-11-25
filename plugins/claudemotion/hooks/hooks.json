@@ -1,0 +1,16 @@
+{
+  "description": "claudemotion - in folders set up with /claudemotion:setup, loads the video-session rules at session start. Prints nothing elsewhere.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.js\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
