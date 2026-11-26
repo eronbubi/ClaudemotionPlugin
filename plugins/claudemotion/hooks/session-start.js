@@ -23,6 +23,7 @@ process.stdin.on('end', () => {
       'CLAUDEMOTION VIDEO SESSION (this folder has claudemotion.json).',
       `Defaults: style "${cfg.style || 'standard'}", ${fmt}, deliver finished MP4s to ${out}.`,
       'For any video request use the claudemotion skill and its workflow: setup check, then ask the open questions with AskUserQuestion,',
+      'pick a fresh concept (references/structures.md + scripts/history.py show: never repeat the opener or story shape of the last two videos),',
       'analyze the song, show the state/scene plan on the beat grid or timeline, and write no code before the user agreed.',
       'Pages use the engine in ./engine (pure seek(t), closed-form springs, one morphing shape). Review contact sheets before the full render,',
       'run loopcheck for loops, then render, mix and mux. Report every placeholder you invented.',

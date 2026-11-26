@@ -100,6 +100,16 @@ Every video is a web page where **every pixel is a pure function of time**. No C
 | 🥁 **Sound on the beat** | Beat grid from spectral flux, verified against measured transients; every UI sound is placed by its own peak. |
 | 🔁 **Perfect loops** | Frame 0 equals frame T - pixel diff 0, cursor position and speed included. Checked automatically. |
 
+### 🎲 Never the same video twice
+
+Every video gets its own concept: Claude picks an **archetype**, an **opener**, a **camera language** and an **ending**, checks what the last videos used, and offers you 2-3 contrasting concepts before it plans anything.
+
+| Archetypes | Openers | Camera |
+|---|---|---|
+| walkthrough · problem → solution · kinetic type · countdown · data story · montage · zoom-through · character · versus · teaser / reveal · tutorial · quote | cold open on the result · bold statement · question · number slam · problem state · mystery · logo build · mid-action · sound-led · notification · zoom-out · cursor click | zoom-to-fit · push-in · pan along a strip · whip pan · locked-off · zoom-through · parallax · tilt & shake |
+
+A small history (`~/.claudemotion/history.json`) remembers the last videos, so the same opener or story shape never comes twice in a row.
+
 ---
 
 ## 🎨 Styles
@@ -158,7 +168,7 @@ plugins/claudemotion/
 ├── hooks/                    session-start: loads the rules in video folders
 └── skills/claudemotion/
     ├── SKILL.md              the workflow Claude follows
-    ├── references/           short & long workflows, styles, audio, gotchas
+    ├── references/           structures (archetypes, openers, camera), short & long workflows, styles, audio, gotchas
     ├── templates/
     │   ├── engine/engine.js  springs, tracks, morph, camera, cursor, presence
     │   ├── engine/styles/    standard · drawn · glass · funny
@@ -169,7 +179,8 @@ plugins/claudemotion/
         ├── render.py         contact sheets, loop check, full render
         ├── sounds.py         16 synthesised UI sounds - no downloads
         ├── mix.py            song + sounds, grid verified against transients
-        └── mux.py            picture + sound → final MP4
+        ├── mux.py            picture + sound → final MP4
+        └── history.py        remembers past concepts so the next video is different
 ```
 
 ## ✅ Requirements

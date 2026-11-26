@@ -253,6 +253,8 @@
   CM.pressAt = null;    // t -> scale of the shape (clicks on the shape itself)
   CM.cursorAt = null;   // t -> [x, y, press] in world units, or null to hide
   CM.kickAt = null;     // t -> extra camera zoom factor
+  CM.panAt = null;      // t -> [x, y] world point the camera looks at (pans, whip pans, strips)
+  CM.tiltAt = null;     // t -> extra camera rotation in degrees
 
   CM.render = function (t) {
     const st = CM.style, els = CM.els;
@@ -261,9 +263,11 @@
     m.vw = (m.w - m0.w) / dt; m.vh = (m.h - m0.h) / dt;
     const fx = (st.frame && st.frame(t, m, els)) || {};
     const s = m.cam * (CM.kickAt ? CM.kickAt(t) : 1);
-    const vx = CM.W / 2 + (fx.shakeX || 0), vy = CM.H / 2 + (fx.shakeY || 0);
-    CM.view = { s, x: vx, y: vy, rot: fx.rot || 0 };
-    els.cam.style.transform = `translate(${vx.toFixed(2)}px,${vy.toFixed(2)}px) rotate(${(fx.rot || 0).toFixed(3)}deg) scale(${s.toFixed(5)})`;
+    const pan = CM.panAt ? CM.panAt(t) : [0, 0];
+    const vx = CM.W / 2 - s * pan[0] + (fx.shakeX || 0), vy = CM.H / 2 - s * pan[1] + (fx.shakeY || 0);
+    const rot = (fx.rot || 0) + (CM.tiltAt ? CM.tiltAt(t) : 0);
+    CM.view = { s, x: vx, y: vy, rot };
+    els.cam.style.transform = `translate(${vx.toFixed(2)}px,${vy.toFixed(2)}px) rotate(${rot.toFixed(3)}deg) scale(${s.toFixed(5)})`;
     if (st.grid) st.grid(els.bg, CM.view);
     const sx = (CM.pressAt ? CM.pressAt(t) : 1) * (fx.squashX || 1), sy = (CM.pressAt ? CM.pressAt(t) : 1) * (fx.squashY || 1);
     Object.assign(els.shape.style, {

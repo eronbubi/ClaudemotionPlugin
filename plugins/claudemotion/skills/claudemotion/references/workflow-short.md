@@ -10,7 +10,8 @@
 
 ## Build
 - `DEF` = states with `{ w, h, r, tone }`, `SEQ` = `[[state, beat], ...]`. In a loop the first state of the loop is the last `SEQ` entry; it wraps to t = 0.
-- Clicks: cursor arrives, mouse-down 70 ms before the beat, up on the beat (`CM.pressTrack`). Add every click to `CM.impacts`.
+- The story shape, opener, camera and ending come from `structures.md` - not from the demo page.
+- Clicks (only when the archetype uses a cursor): cursor arrives, mouse-down 70 ms before the beat, up on the beat (`CM.pressTrack`). Add every click and every landing to `CM.impacts`.
 - Two-spring edges (tab indicators, toggle knobs, segmented controls): the leading edge rides a stiffer spring than the trailing edge, so it stretches ahead. See the toggle in `templates/demo.html`.
 - Drags are direct manipulation: while held, the value is computed from the cursor position (rubber-band past the ends: `max + k * log(1 + over / k)`); on release it springs back from where it was.
 - Camera zooms per state (fit) and may kick (`CM.kickAt`) on impacts.
