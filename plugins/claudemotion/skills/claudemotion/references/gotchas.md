@@ -11,5 +11,10 @@
 - **Loop check:** frame 0 and frame T must have max diff 0, and the cursor must have the same position and speed at both ends (`render.py loopcheck`). Background motion (glass light) must complete whole cycles per loop.
 - **Non-loop pages** start at unit 0 with their first state in `SEQ`; otherwise the shape starts with no content.
 - **Windows multiprocessing:** render workers are fresh interpreters; the renderer passes its arguments explicitly.
+- **Never name page globals `T`, `B` or `LOOP`.** A top-level `const B = ...` in the page script shadows `window.B`, and the renderer reads the wrong value (it crashed with "float / str"). Use other names for clip ids and helpers.
+- **Edit mode: no `<video>` elements.** They cannot be seeked frame-accurately while rendering; unpack clips with `footage.py` and use `CM.Cutter`. Load `footage/footage.js` before `engine/edit.js`.
+- **Edit mode: wrong in/out points** are the most common mistake. Check one frame at the start and end of every segment (`render.py times`) against what the user asked for.
+- **Captions over bright footage** need a text shadow or a backing plate; check them on the brightest shot.
+- **Long sound files and voice-over (TTS)**: generate line by line, trim silence, check every line's length against its text (runaway generations are 3-5x too long) and transcribe the result once to catch wrong words.
 - **4 subframes** show faint ghost copies on very fast motion; 8 subframes halve them at double render time. Mention it when relevant.
 - **Spinner/blur on `#cam`**: never put `filter`, `opacity` or `will-change` on `#cam` in glass (isolates the backdrop) or in any style (blurry text when scaled). The drawn style's pencil filter on `#cam` is the one deliberate exception.

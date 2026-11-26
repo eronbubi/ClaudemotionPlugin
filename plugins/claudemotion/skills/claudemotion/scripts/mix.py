@@ -64,6 +64,7 @@ def main():
     ap.add_argument("--music-gain", type=float, default=0.82)
     ap.add_argument("--normalize", type=float, default=0.89, help="song peak before mixing (0 = keep)")
     ap.add_argument("--fade-out", type=float, default=1.5)
+    ap.add_argument("--ui-gain", type=float, default=1.0, help="UI sound level; about 0.6 under a voice")
     a = ap.parse_args()
 
     cues = json.loads(Path(a.events).read_text())
@@ -134,7 +135,7 @@ def main():
         else:
             ok = (idx >= 0) & (idx < n)
             np.add.at(ui, idx[ok], snd[ok] * lvl * ev.get("gain", 1))
-    mix = song * a.music_gain + ui[:, None]
+    mix = song * a.music_gain + a.ui_gain * ui[:, None]
     peak = float(np.max(np.abs(mix)))
     if peak > 0.97:
         mix *= 0.97 / peak

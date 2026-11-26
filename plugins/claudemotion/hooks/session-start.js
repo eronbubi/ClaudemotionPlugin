@@ -18,7 +18,9 @@ process.stdin.on('end', () => {
     if (!fs.existsSync(file)) return;
     const cfg = JSON.parse(fs.readFileSync(file, 'utf8'));
     const out = cfg.output || path.join(require('os').homedir(), 'Downloads');
-    const fmt = cfg.format === 'long' ? 'long format 16:9 1920x1080 60 fps (beat sync optional)' : 'short beat-synced loop 1440x1440 60 fps';
+    const fmt = cfg.format === 'edit'
+      ? 'edit mode: real footage cut and finished with motion graphics, 16:9 1920x1080 60 fps (scripts/footage.py, engine/edit.js, references/workflow-edit.md)'
+      : cfg.format === 'long' ? 'long format 16:9 1920x1080 60 fps (beat sync optional)' : 'short beat-synced loop 1440x1440 60 fps';
     const ctx = [
       'CLAUDEMOTION VIDEO SESSION (this folder has claudemotion.json).',
       `Defaults: style "${cfg.style || 'standard'}", ${fmt}, deliver finished MP4s to ${out}.`,

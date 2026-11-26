@@ -1,8 +1,8 @@
 {
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "claudemotion",
-  "version": "1.1.0",
-  "description": "Motion-graphics videos as code: one morphing shape, closed-form springs, beat-synced UI sounds, rendered to MP4 with motion blur. Short square loops or long 16:9 videos, in four styles: standard, drawn, glass, funny.",
+  "version": "1.2.0",
+  "description": "Motion-graphics videos as code: one morphing shape, closed-form springs, beat-synced UI sounds, rendered to MP4 with motion blur. Short square loops or long 16:9 videos, in four styles: standard, drawn, glass, funny. Edit mode cuts your own footage and finishes it with titles, lower thirds, captions and transitions.",
   "author": { "name": "girgi" },
-  "keywords": ["video", "motion", "animation", "playwright", "ffmpeg", "launch", "promo"]
+  "keywords": ["video", "motion", "animation", "playwright", "ffmpeg", "launch", "promo", "video-editing", "captions"]
 }

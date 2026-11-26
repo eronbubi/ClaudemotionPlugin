@@ -8,7 +8,7 @@ Modes
   sheet      one frame per unit (beat or second) plus 4x4 contact sheets
   at         frames at the given units:   at 12.5 30 41.25
   times      frames at the given seconds: times 3.2 10
-  events     write events.json (sound cues) and print T
+  events     write events.json (sound cues, and the edit segments of edit pages) and print T
   loopcheck  compare frame 0 with frame T and the cursor at both ends
   full       final video: FPS, SUB subframes per frame, blended with tmix
 
@@ -70,6 +70,8 @@ def open_page(p):
 
 def shot(page, t):
     page.evaluate(f"seek({t:.6f})")
+    # edit pages: wait until the footage frames set by seek() are decoded
+    page.evaluate("window.CM && CM.settle ? CM.settle() : 0")
     return page.screenshot(type="png")
 
 
@@ -120,11 +122,15 @@ def export_events():
     with sync_playwright() as p:
         browser, page = open_page(p)
         ev = page.evaluate("typeof soundEvents === 'function' ? soundEvents() : []")
+        clips = page.evaluate("typeof editAudio === 'function' ? editAudio() : null")
         T, loop = page.evaluate("T"), page.evaluate("LOOP")
         browser.close()
     d = out_dir()
-    (d / "events.json").write_text(json.dumps({"T": T, "loop": loop, "events": ev}, indent=1))
-    print(len(ev), "events, T =", T, "loop =", loop)
+    data = {"T": T, "loop": loop, "events": ev}
+    if clips is not None:
+        data["clips"] = clips
+    (d / "events.json").write_text(json.dumps(data, indent=1))
+    print(len(ev), "events, T =", T, "loop =", loop, f"| {len(clips)} edit segments" if clips is not None else "")
 
 
 def loopcheck():

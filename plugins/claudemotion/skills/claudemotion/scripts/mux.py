@@ -18,6 +18,7 @@ def main():
     ap.add_argument("--audio")
     ap.add_argument("--timing", required=True)
     ap.add_argument("--dest", required=True)
+    ap.add_argument("--loudnorm", type=float, help="normalize the sound to this loudness in LUFS, e.g. -16 for voice videos")
     a = ap.parse_args()
     tm = json.loads(Path(a.timing).read_text())
     dest = Path(os.path.expandvars(os.path.expanduser(a.dest)))
@@ -26,8 +27,13 @@ def main():
     if a.audio:
         f = tm["T"] / tm["seconds"] if tm["loop"] else 1.0
         cmd += ["-i", a.audio, "-map", "0:v", "-map", "1:a"]
+        af = []
         if abs(f - 1) > 1e-6:
-            cmd += ["-af", f"atempo={f:.8f}"]
+            af.append(f"atempo={f:.8f}")
+        if a.loudnorm is not None:
+            af += [f"loudnorm=I={a.loudnorm:g}:TP=-1.5:LRA=11", "aresample=48000"]
+        if af:
+            cmd += ["-af", ",".join(af)]
         cmd += ["-c:a", "aac", "-b:a", "320k"]
     cmd += ["-c:v", "copy", "-t", f"{tm['seconds']:.4f}", "-movflags", "+faststart", str(dest)]
     subprocess.run(cmd, check=True)

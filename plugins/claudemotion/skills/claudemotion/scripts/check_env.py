@@ -36,5 +36,11 @@ except Exception as e:  # noqa: BLE001
 if shutil.which("ffmpeg"):
     enc = subprocess.run(["ffmpeg", "-hide_banner", "-encoders"], capture_output=True, text=True).stdout
     line("libx264" in enc, "libx264", "available" if "libx264" in enc else "missing", "use an ffmpeg build with libx264")
+try:  # optional: word timestamps for captions in edit mode (scripts/transcribe.py)
+    import faster_whisper
+    print(f"[ok] faster-whisper (optional, captions): {getattr(faster_whisper, '__version__', 'installed')}")
+except ImportError:
+    print(f"[optional] faster-whisper: not installed, only needed for auto captions in edit mode\n"
+          f"        install: {sys.executable} -m pip install faster-whisper")
 print("READY" if ok else "NOT READY")
 sys.exit(0 if ok else 1)

@@ -6,7 +6,7 @@
   "plugins": [
     {
       "name": "claudemotion",
-      "description": "Motion-graphics videos as code: one morphing shape, closed-form springs, beat-synced UI sounds, rendered to MP4. Short loops or long 16:9 videos in four styles (standard, drawn, glass, funny).",
+      "description": "Motion-graphics videos as code: one morphing shape, closed-form springs, beat-synced UI sounds, rendered to MP4. Short loops, long 16:9 videos, or edit mode for your own footage, in four styles (standard, drawn, glass, funny).",
       "category": "productivity",
       "author": { "name": "girgi" },
       "source": "./plugins/claudemotion"

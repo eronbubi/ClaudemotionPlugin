@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en" data-style="standard" data-mode="long" data-beat="1">
+<head>
+<meta charset="utf-8">
+<title>Claudemotion edit demo</title>
+<script src="engine/engine.js"></script>
+<script src="engine/styles/standard.js"></script>
+<script src="footage/footage.js"></script>
+<script src="engine/edit.js"></script>
+</head>
+<body>
+<script>
+'use strict';
+/* Demo of the edit-mode API only. Do not reuse its story (title, lower
+   third, b-roll, end card) for real videos: plan the cut with the user and
+   pick a concept from references/structures.md.
+
+   Needs two clips added with scripts/footage.py under the ids A and B:
+     python footage.py add talk.mp4 --id a
+     python footage.py add broll.mp4 --id b
+   Units are seconds (beat=1). */
+CM.mount();
+const { h, S, c01 } = CM;
+const CA = 'a', CB = 'b';   // clip ids (never name globals T, B or LOOP: the renderer reads those)
+const clipA = CM.FOOTAGE.clips[CA], clipB = CM.FOOTAGE.clips[CB];
+if (!clipA || !clipB) {
+  document.body.insertAdjacentHTML('beforeend', '<p style="position:absolute;top:40px;left:40px;font:24px sans-serif">Add clips "a" and "b" with scripts/footage.py first.</p>');
+  throw new Error('clips a and b are missing');
+}
+
+/* ---------------- the cut ---------------- */
+const a0 = clipA.start, b0 = clipB.start;
+const cut = CM.edl([
+  { clip: CA, in: a0 + 0.5, out: a0 + 4.5, zoom: [1, 1.08], focus: [0.5, 0.42] },                  // slow push-in
+  { clip: CB, in: b0 + 1.0, out: b0 + 4.0, trans: { type: 'whip', dur: 0.35 } },                    // whip pan to b-roll
+  { clip: CA, in: a0 + 6.0, out: a0 + 9.0, speed: [1, 2.2], trans: { type: 'fade', dur: 0.5 } },   // speed ramp
+  { clip: CB, in: b0 + 5.0, out: b0 + 6.5, speed: 0.5, hold: 1.0, zoom: 1.15, focus: [0.3, 0.5], trans: { type: 'circle', dur: 0.45 } }, // slow motion, freeze
+]);
+const END = cut.end;                 // the end card starts here
+CM.timeline(END + 3.5);
+const player = new CM.Cutter(cut);
+
+/* ---------------- motion graphics over the footage ---------------- */
+/* The morphing shape stays hidden until the end card: a zero-size state first. */
+const ST = CM.states({
+  hidden: { w: 0, h: 0, r: 0, tone: 'surface' },
+  card:   { w: 980, h: 420, r: 40, tone: 'surface', zoom: 1 },
+}, [['hidden', -1], ['card', END - 0.2]]);
+CM.els.shape.style.boxShadow = 'none';
+{
+  const st = ST.card;
+  st.el.t1 = CM.txt(st, 'Your end card', 0, -40, 84, { weight: 600, anchor: 'c', ls: '-0.04em' });
+  st.el.t2 = CM.txt(st, 'link, logo or call to action', 0, 60, 34, { weight: 500, anchor: 'c', color: 'var(--muted)' });
+}
+const FX = CM.els.fx;
+/* kinetic title on the first shot */
+const title = h('div', FX, { position: 'absolute', left: '120px', top: '380px', fontSize: '120px', fontWeight: 600, letterSpacing: '-0.05em', color: '#FFFFFF', textShadow: '0 6px 30px rgba(0,0,0,0.45)', whiteSpace: 'nowrap' });
+const words = CM.words(title, 'A title over footage', 120);
+/* lower third */
+const lower = h('div', FX, { position: 'absolute', left: '120px', top: '820px', display: 'flex', alignItems: 'center', gap: '18px', padding: '18px 30px 18px 18px', borderRadius: '24px', background: 'rgba(255,255,255,0.94)', boxShadow: '0 12px 40px rgba(0,0,0,0.25)' });
+const bar = h('div', lower, { width: '8px', height: '64px', borderRadius: '4px', background: 'var(--accent)' });
+const lt = h('div', lower, {});
+h('div', lt, { fontSize: '34px', fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--ink)' }, 'Name Placeholder');
+h('div', lt, { fontSize: '22px', fontWeight: 500, color: 'var(--muted)' }, 'Role or context');
+/* speed-ramp badge */
+const badge = h('div', FX, { position: 'absolute', right: '80px', top: '70px', padding: '10px 20px', borderRadius: '999px', background: 'rgba(0,0,0,0.55)', color: '#FFF', fontSize: '26px', fontWeight: 600, fontVariantNumeric: 'tabular-nums' });
+/* captions from the transcript, if scripts/transcribe.py was run */
+const caps = CM.captions(cut.words(), { y: CM.H - 150, size: 60 });
+
+function seek(tIn) {
+  const t = CM.time(tIn);
+  CM.render(t);
+  const on = player.render(t);
+  /* title: words rise in, then leave before the whip */
+  words.forEach((w, i) => { CM.reveal(w, 0.3 + 0.12 * i, t, 30); });
+  title.style.opacity = (1 - c01((t - (cut.segs[1].start - 0.5)) / 0.3)).toFixed(3);
+  /* lower third: slides in, holds, slides out */
+  const s = S(t - 1.4, 16, 0.85), out = c01(S(t - (cut.segs[1].start - 0.6), 16, 1));
+  lower.style.opacity = (c01(s * 1.5) * (1 - out)).toFixed(3);
+  lower.style.transform = `translateX(${(-60 * (1 - s) - 80 * out).toFixed(1)}px)`;
+  bar.style.height = (64 * c01(S(t - 1.55, 14, 1))).toFixed(1) + 'px';
+  /* speed badge: shows the current playback speed of the ramp segment */
+  const sg = cut.segs[2], inRamp = t >= sg.start && t < sg.end;
+  badge.style.opacity = inRamp ? c01((t - sg.start) / 0.2) * (1 - c01((t - sg.end + 0.2) / 0.2)) : 0;
+  if (inRamp) badge.textContent = (sg.v0 + (sg.v1 - sg.v0) * c01((t - sg.start) / sg.play)).toFixed(1) + 'x';
+  caps.render(t);
+  /* end card */
+  CM.reveal(ST.card.el.t1, END + 0.2, t, 14); CM.reveal(ST.card.el.t2, END + 0.45, t, 10);
+  player.root.style.filter = t > END - 0.4 ? `blur(${(10 * c01((t - END + 0.4) / 0.6)).toFixed(2)}px) brightness(${(1 - 0.35 * c01((t - END + 0.4) / 0.6)).toFixed(3)})` : 'none';
+}
+
+function soundEvents() {
+  const ev = [];
+  const add = (t, type, gain = 1) => ev.push({ t, beat: 0.5, type, gain });
+  cut.segs.slice(1).forEach(sg => add(sg.start + sg.trans.dur * 0.4, 'whoosh', 0.8));
+  add(1.4, 'pop', 0.6);
+  add(END - 0.2, 'whoosh', 0.7); add(END + 0.2, 'pop', 0.8);
+  return ev.sort((x, y) => x.t - y.t);
+}
+
+window.T = CM.T; window.B = CM.B; window.LOOP = CM.loop; window.seek = seek; window.soundEvents = soundEvents;
+window.editAudio = () => cut.audio();
+window.ready = CM.ready().then(ok => { seek(0); return CM.settle().then(() => ok); });
+seek(Number(CM.Q.get('t') || 0));
+</script>
+</body>
+</html>

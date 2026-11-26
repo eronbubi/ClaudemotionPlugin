@@ -6,7 +6,7 @@
   <a href="#-quickstart"><img alt="Claude Code plugin" src="https://img.shields.io/badge/Claude%20Code-plugin-D97757?style=for-the-badge"></a>
   <img alt="60 fps" src="https://img.shields.io/badge/60%20fps-motion%20blur-111111?style=for-the-badge">
   <img alt="4 styles" src="https://img.shields.io/badge/styles-4-2E9B5B?style=for-the-badge">
-  <img alt="Formats" src="https://img.shields.io/badge/1%3A1%20loop%20%C2%B7%2016%3A9-formats-7C6CFF?style=for-the-badge">
+  <img alt="Formats" src="https://img.shields.io/badge/1%3A1%20loop%20%C2%B7%2016%3A9%20%C2%B7%20edit-formats-7C6CFF?style=for-the-badge">
 </p>
 
 <p align="center">
@@ -47,6 +47,21 @@ For explainers, launches and walkthroughs: 1920×1080 at 60 fps, scenes timed in
 <p align="center"><img src="docs/assets/long-format.gif" alt="long format 16:9" width="100%"></p>
 
 <sub>GIFs are downscaled previews. Real renders are 1440×1440 or 1920×1080 MP4 at 60 fps with motion blur and sound.</sub>
+
+### ✂️ Edit mode: your footage, finished as code
+
+Bring your own clips - talking head, product demo, screen recording, B-roll - and Claude cuts them and lays motion graphics on top:
+
+- **Cut** - trims, jump cuts, speed ramps (`speed: [1, 2.5]`), slow motion, freeze frames
+- **Move** - punch-ins and Ken Burns (`zoom`, `focus`), whip pans, wipes, circle reveals, dips, cross-fades
+- **Graphics** - titles, lower thirds, callouts, counters, end cards, word-by-word captions from a local transcript
+- **Sound** - the clips' own sound follows the cut exactly, plus voice-over and music that ducks under speech
+
+```text
+/claudemotion:edit talk.mp4 broll.mp4 a 45 s product clip with captions and a lower third
+```
+
+Clips are unpacked once into frames (`footage.py`), so every frame of the edit is still a pure function of time and renders frame-accurately.
 
 ---
 
@@ -125,20 +140,22 @@ Pages use CSS variables (`--ink`, `--accent`, `--surface` …), so one page rend
 
 ## 📐 Formats
 
-| | Short | Long |
-|---|---|---|
-| Size | 1440 × 1440 | 1920 × 1080 (16:9) |
-| Timing | beats of your song | seconds - beat sync optional |
-| Ending | seamless loop | end card + music fade-out |
-| Typical length | 8 - 30 s | 30 s - several minutes |
-| Frame rate | 60 fps | 60 fps |
+| | Short | Long | Edit |
+|---|---|---|---|
+| Size | 1440 × 1440 | 1920 × 1080 (16:9) | 1920 × 1080 or 1080 × 1920 |
+| Source | pure code | pure code | your clips + code |
+| Timing | beats of your song | seconds - beat sync optional | the cut, the speech or the beat |
+| Ending | seamless loop | end card + music fade-out | end card + music fade-out |
+| Typical length | 8 - 30 s | 30 s - several minutes | 15 s - several minutes |
+| Frame rate | 60 fps | 60 fps | 60 fps |
 
 ## 🧰 Commands
 
 | Command | What it does |
 |---|---|
-| `/claudemotion:setup [style] [short\|long]` | Checks Python, numpy, Pillow, Playwright/Chromium and ffmpeg; creates `claudemotion.json`, `engine/`, `audio/`, `out/` and a demo page. |
+| `/claudemotion:setup [style] [short\|long\|edit]` | Checks Python, numpy, Pillow, Playwright/Chromium and ffmpeg; creates `claudemotion.json`, `engine/`, `audio/`, `out/` and a demo page. |
 | `/claudemotion:new <idea>` | Starts a video: questions → song analysis → plan → build → review → render → MP4. |
+| `/claudemotion:edit <clips> <idea>` | Cuts your own footage and finishes it with motion graphics, captions and sound. |
 | `/claudemotion:styles [name]` | Shows the four styles or sets the project's default. |
 
 Folders with a `claudemotion.json` load the video-session rules automatically at session start.
@@ -164,21 +181,26 @@ Full text: [`references/example-prompt.md`](plugins/claudemotion/skills/claudemo
 
 ```text
 plugins/claudemotion/
-├── commands/                 /claudemotion:setup · :new · :styles
+├── commands/                 /claudemotion:setup · :new · :edit · :styles
 ├── hooks/                    session-start: loads the rules in video folders
 └── skills/claudemotion/
     ├── SKILL.md              the workflow Claude follows
     ├── references/           structures (archetypes, openers, camera), short & long workflows, styles, audio, gotchas
     ├── templates/
     │   ├── engine/engine.js  springs, tracks, morph, camera, cursor, presence
+    │   ├── engine/edit.js    edit mode: cut list, footage player, transitions, captions
     │   ├── engine/styles/    standard · drawn · glass · funny
-    │   └── demo.html         a complete example page
+    │   ├── demo.html         a complete example page
+    │   └── edit.html         an example edit page
     └── scripts/
         ├── check_env.py      tool check with exact fix commands
         ├── analyze.py        beat grid, song structure, energy map
         ├── render.py         contact sheets, loop check, full render
         ├── sounds.py         16 synthesised UI sounds - no downloads
         ├── mix.py            song + sounds, grid verified against transients
+        ├── footage.py        clips → frames + sound for edit mode
+        ├── transcribe.py     word timestamps for captions (optional)
+        ├── edit_audio.py     sound that follows the cut, voice-over, ducked music
         ├── mux.py            picture + sound → final MP4
         └── history.py        remembers past concepts so the next video is different
 ```
@@ -189,6 +211,7 @@ plugins/claudemotion/
 - Python 3.9+ with `numpy`, `pillow`, `playwright` → `pip install numpy pillow playwright` and `python -m playwright install chromium`
 - ffmpeg with libx264 on your PATH (Windows: `winget install Gyan.FFmpeg`)
 - Node.js (for the session hook) and internet access for Google Fonts while rendering
+- Optional, for captions in edit mode: `pip install faster-whisper`
 
 `/claudemotion:setup` checks all of this and prints the exact fix for anything missing.
 

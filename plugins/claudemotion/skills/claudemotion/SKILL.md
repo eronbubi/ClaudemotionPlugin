@@ -1,6 +1,6 @@
 ---
 name: claudemotion
-description: Make motion-graphics videos as code - Dribbble-level UI motion, product launches, promos, explainers - rendered to MP4 with music and synced UI sounds. One morphing shape, closed-form springs, a pure seek(t) page rendered by Playwright with motion blur. Short beat-synced loops (1440x1440) or long-format 16:9 videos (1920x1080, 60 fps) that do not have to follow the beat. Four looks - standard, drawn (colored pencil), glass, funny. Use whenever the user asks for a motion video, UI animation, launch or promo video, "mach ein Video", "Claudemotion", or wants a video in one of these styles.
+description: Make motion-graphics videos as code - Dribbble-level UI motion, product launches, promos, explainers - rendered to MP4 with music and synced UI sounds. One morphing shape, closed-form springs, a pure seek(t) page rendered by Playwright with motion blur. Short beat-synced loops (1440x1440), long-format 16:9 videos (1920x1080, 60 fps) that do not have to follow the beat, or edit mode - the user's own footage cut and finished with titles, lower thirds, captions and transitions. Four looks - standard, drawn (colored pencil), glass, funny. Use whenever the user asks for a motion video, UI animation, launch or promo video, "mach ein Video", "Claudemotion", wants a video in one of these styles, or wants their clips cut and edited with motion graphics ("schneide mein Video", "edit this footage").
 ---
 
 # Claudemotion
@@ -9,12 +9,14 @@ Videos are web pages whose every pixel is a pure function of time, rendered fram
 
 - `templates/engine/engine.js` - springs, tracks, the morphing shape, camera, presence, cursor
 - `templates/engine/styles/{standard,drawn,glass,funny}.js` - the four looks
-- `templates/demo.html` - a working page that shows the engine API (read it for the technique, never copy its story: button click, toggle, chart, toast is just a test sequence)
-- `scripts/check_env.py`, `analyze.py`, `render.py`, `sounds.py`, `mix.py`, `mux.py`, `history.py`
+- `templates/engine/edit.js` - edit mode: edit decision list, footage player with transitions, punch-ins, speed ramps, word-by-word captions
+- `templates/demo.html` - a working page that shows the engine API (read it for the technique, never copy its story: button click, toggle, chart, toast is just a test sequence); `templates/edit.html` does the same for edit mode
+- `scripts/check_env.py`, `analyze.py`, `render.py`, `sounds.py`, `mix.py`, `mux.py`, `history.py`; edit mode adds `footage.py` (clips to frames + sound), `transcribe.py` (word times, optional) and `edit_audio.py` (sound that follows the cut, voice-over, ducked music)
 - `references/` - read the ones the job needs:
   - `structures.md` - **read for every video**: archetypes, openers, camera languages, transitions, endings, pacing, the variety checklist
   - `workflow-short.md` - beat-synced square loop (the classic)
   - `workflow-long.md` - long format 16:9, scenes in seconds, beat sync optional
+  - `workflow-edit.md` - edit mode: the user's footage, cut and finished as code
   - `styles.md` - what each style looks and moves like, its rules and its bans
   - `audio.md` - beat grid, sound placement, mixing, the known traps
   - `gotchas.md` - mistakes already made once; check before every review
@@ -24,7 +26,7 @@ Videos are web pages whose every pixel is a pure function of time, rendered fram
 
 1. **Setup check.** Run `python <skill>/scripts/check_env.py`. If something is missing, show the user the exact fix commands and ask before installing anything.
 2. **Ask first, build later.** Never write code before the user has answered. Use AskUserQuestion (max 4 questions per call, ask again if more is open). Always settle:
-   - format: short loop (1440x1440, beat-synced) or long format (1920x1080 16:9, 60 fps)
+   - format: short loop (1440x1440, beat-synced), long format (1920x1080 16:9, 60 fps) or edit mode (the user's clips; follow `workflow-edit.md`)
    - style: standard / drawn / glass / funny
    - content: the UI states or scenes, product name, the facts to show, the end text or CTA
    - colors (per style defaults otherwise), the song (the user's file, or a royalty-free track; downloading needs the user's OK), length

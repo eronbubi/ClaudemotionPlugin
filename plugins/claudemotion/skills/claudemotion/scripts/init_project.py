@@ -1,11 +1,13 @@
 """Set up a folder as a Claudemotion video project.
 
-  python init_project.py [folder] [--style standard] [--format short] [--output ~/Downloads]
+  python init_project.py [folder] [--style standard] [--format short|long|edit] [--output ~/Downloads]
 
 Creates (never overwrites existing files):
   claudemotion.json   project settings read by the session hook
   engine/             copy of the engine and the four styles
   audio/  out/        song files and render output
+  footage/            edit format only: clips unpacked by scripts/footage.py
+  demo.html / edit.html  a working example page (edit.html for the edit format)
 """
 import argparse
 import json
@@ -19,7 +21,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("folder", nargs="?", default=".")
     ap.add_argument("--style", default="standard", choices=["standard", "drawn", "glass", "funny"])
-    ap.add_argument("--format", default="short", choices=["short", "long"])
+    ap.add_argument("--format", default="short", choices=["short", "long", "edit"])
     ap.add_argument("--output", default=str(Path.home() / "Downloads"))
     a = ap.parse_args()
     root = Path(a.folder).resolve()
@@ -29,7 +31,7 @@ def main():
         print("exists:", cfg)
     else:
         cfg.write_text(json.dumps({"style": a.style, "format": a.format, "output": a.output,
-                                   "fps": 60, "size": [1920, 1080] if a.format == "long" else [1440, 1440]}, indent=2))
+                                   "fps": 60, "size": [1920, 1080] if a.format in ("long", "edit") else [1440, 1440]}, indent=2))
         print("created:", cfg)
     eng = root / "engine"
     if eng.exists():
@@ -37,11 +39,12 @@ def main():
     else:
         shutil.copytree(SKILL / "templates" / "engine", eng)
         print("copied:", eng)
-    for d in ["audio", "out"]:
+    for d in ["audio", "out"] + (["footage"] if a.format == "edit" else []):
         (root / d).mkdir(exist_ok=True)
-    demo = root / "demo.html"
+    name = "edit.html" if a.format == "edit" else "demo.html"
+    demo = root / name
     if not demo.exists():
-        shutil.copy(SKILL / "templates" / "demo.html", demo)
+        shutil.copy(SKILL / "templates" / name, demo)
         print("copied:", demo)
     print("project ready:", root)
 
