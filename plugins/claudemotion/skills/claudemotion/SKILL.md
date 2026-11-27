@@ -17,6 +17,7 @@ Videos are web pages whose every pixel is a pure function of time, rendered fram
   - `workflow-short.md` - beat-synced square loop (the classic)
   - `workflow-long.md` - long format 16:9, scenes in seconds, beat sync optional
   - `workflow-edit.md` - edit mode: the user's footage, cut and finished as code
+  - `publish-youtube.md` - publishing the finished video on YouTube through the built-in browser
   - `styles.md` - what each style looks and moves like, its rules and its bans
   - `audio.md` - beat grid, sound placement, mixing, the known traps
   - `gotchas.md` - mistakes already made once; check before every review
@@ -38,6 +39,7 @@ Videos are web pages whose every pixel is a pure function of time, rendered fram
 7. **Review frames before the full render**: `render.py sheet` (one frame per beat or per second) and look at every contact sheet. Fix anything off the grid, cramped, clipped, overlapping or hard to read. Check `gotchas.md`. For loops run `render.py loopcheck` (max diff must be 0).
 8. **Render** `render.py full` in the background, then `render.py events`, `mix.py`, `mux.py`.
 9. **Deliver** to the user's output folder (default: the Downloads folder) and verify the file with ffprobe and two or three extracted frames. Record the concept with `history.py add` (title, archetype, opener, camera, ending, style, format). Report path, resolution, fps, length, size, what was checked, and every placeholder you invented.
+10. **Publish** (the user's standing wish: every finished video goes on YouTube unless they say no): right after delivery, follow `references/publish-youtube.md`. Ask the publish questions (visibility with "No" as an option, title, description); on any answer other than "No", open YouTube Studio in the built-in browser, let the user sign in and drag the file in, fill in the details and publish with the approved visibility. `/claudemotion:publish` runs this step on its own.
 
 ## Rules that hold in every style
 

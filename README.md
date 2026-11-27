@@ -63,6 +63,10 @@ Bring your own clips - talking head, product demo, screen recording, B-roll - an
 
 Clips are unpacked once into frames (`footage.py`), so every frame of the edit is still a pure function of time and renders frame-accurately.
 
+### 📺 Straight to YouTube
+
+When a video is done, Claude asks three things - visibility (public, unlisted, private or **no**), title and description - and then publishes it through YouTube Studio in the app's built-in browser. You sign in yourself and drag the file into the upload dialog; Claude fills in the details, walks through the checks, stops if YouTube reports a claim, and hands you the link. Nothing goes live without your answers.
+
 ---
 
 ## ⚡ Quickstart
@@ -156,6 +160,7 @@ Pages use CSS variables (`--ink`, `--accent`, `--surface` …), so one page rend
 | `/claudemotion:setup [style] [short\|long\|edit]` | Checks Python, numpy, Pillow, Playwright/Chromium and ffmpeg; creates `claudemotion.json`, `engine/`, `audio/`, `out/` and a demo page. |
 | `/claudemotion:new <idea>` | Starts a video: questions → song analysis → plan → build → review → render → MP4. |
 | `/claudemotion:edit <clips> <idea>` | Cuts your own footage and finishes it with motion graphics, captions and sound. |
+| `/claudemotion:publish [video]` | Publishes a finished video on YouTube through YouTube Studio in the built-in browser - after asking visibility, title and description. |
 | `/claudemotion:styles [name]` | Shows the four styles or sets the project's default. |
 
 Folders with a `claudemotion.json` load the video-session rules automatically at session start.
@@ -181,7 +186,7 @@ Full text: [`references/example-prompt.md`](plugins/claudemotion/skills/claudemo
 
 ```text
 plugins/claudemotion/
-├── commands/                 /claudemotion:setup · :new · :edit · :styles
+├── commands/                 /claudemotion:setup · :new · :edit · :publish · :styles
 ├── hooks/                    session-start: loads the rules in video folders
 └── skills/claudemotion/
     ├── SKILL.md              the workflow Claude follows

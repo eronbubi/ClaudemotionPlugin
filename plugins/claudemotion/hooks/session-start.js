@@ -29,6 +29,7 @@ process.stdin.on('end', () => {
       'analyze the song, show the state/scene plan on the beat grid or timeline, and write no code before the user agreed.',
       'Pages use the engine in ./engine (pure seek(t), closed-form springs, one morphing shape). Review contact sheets before the full render,',
       'run loopcheck for loops, then render, mix and mux. Report every placeholder you invented.',
+      'After delivery, ask the YouTube publish questions (references/publish-youtube.md) and publish unless the user answers no.',
     ].join(' ');
     process.stdout.write(JSON.stringify({ hookSpecificOutput: { hookEventName: 'SessionStart', additionalContext: ctx } }));
   } catch (_) { /* fail open */ }
